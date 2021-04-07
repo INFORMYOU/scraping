@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup # 데이터 파싱
 import re
 import datetime
 import time
+import pymysql
+
+
 
 def get_timeSaleInfo():
 
@@ -16,10 +19,10 @@ def get_timeSaleInfo():
     soup = BeautifulSoup(html, 'html.parser')
     timesale_info = soup.find("div", {"id": "timesale_wrap"})
 
-
     #Step 3. 현재 진행중인 Deal의 필요정보 추출
     deal_num = len(timesale_info.find_all('span', class_="time_info last"))
- 
+    
+    products = []
     for i in range(deal_num):
         title = timesale_info.find_all('p', class_="dsc")[i].get_text().strip()
         price = timesale_info.find_all('strong')[i].get_text().strip()[:-1].replace(",","")
@@ -29,28 +32,52 @@ def get_timeSaleInfo():
         except : 
             url = re.search(r"https://shopping.naver.com/outlink/itemdetail/\d+",str(timesale_info.find_all('a')[i])).group()
 
-        print(now)
-        print(title)
-        print(price)
-        print(views)
-        print(url)
-        print("========================================")
+        product = [now, title, price, views, url]
+        products.append(product)
+    
+    return insert_data(products)
 
-     
+
+
+def insert_data(products_info):
+
+    # connection information
+    conn = pymysql.connect(
+        host = 'localhost', 
+        user = 'root', 
+        password = 'root1234',
+        db = 'naver_hotdeal', 
+        charset ='utf8'
+    )
+
+    # create cursor
+    curs = conn.cursor()
+
+    # create sql and commit
+    for product in products_info:
+        sql = "INSERT INTO views_tb VALUES('"  + product[0] + "','" + product[1] + "','" + product[2] + "','" + product[3] + "','" + product[4] + "');"
+        print(sql)
+        print("====================")
+        curs.execute(sql)
+        conn.commit()
+    
+    # close connection
+    conn.close()
 
 
 
 if __name__ == "__main__":
 
     while True:
-        now = str(datetime.datetime.now())
+        now = str(datetime.datetime.now())[0:-7]
+ 
         if now[-12:-10] in ['00', '15', '30', '45']:
             get_timeSaleInfo()
 
         time.sleep(898)
 
-        # test용
-        # if now[-12:-10] in ['59', '01]:
+        # # test용
+        # if now[-5:-3] in ['22', '24']:
         #     get_timeSaleInfo()
 
         # time.sleep(60)
