@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #Step 0. 필요한 모듈과 라이브러리를 로딩합니다.
 import requests # Python에서 HTTP 요청을 보내는 모듈
 from bs4 import BeautifulSoup # 데이터 파싱
@@ -22,7 +24,8 @@ def get_timeSaleInfo():
     #Step 3. 현재 진행중인 Deal의 필요정보 추출
     deal_num = len(timesale_info.find_all('span', class_="time_info last"))
     
-    products = []
+    deals_info = []
+    now = str(datetime.datetime.now())[0:-7]
     for i in range(deal_num):
         title = timesale_info.find_all('p', class_="dsc")[i].get_text().strip()
         price = timesale_info.find_all('strong')[i].get_text().strip()[:-1].replace(",","")
@@ -32,16 +35,16 @@ def get_timeSaleInfo():
         except : 
             url = re.search(r"https://shopping.naver.com/outlink/itemdetail/\d+",str(timesale_info.find_all('a')[i])).group()
 
-        product = [now, title, price, views, url]
-        products.append(product)
+        deal_info = [now, title, price, views, url]
+        deals_info.append(deal_info)
     
-    return insert_data(products)
+    return insert_data(deals_info)
 
 
 
-def insert_data(products_info):
+def insert_data(deals_info):
 
-    # connection information
+    #Step 1. connection information
     conn = pymysql.connect(
         host = 'localhost', 
         user = 'root', 
@@ -50,34 +53,22 @@ def insert_data(products_info):
         charset ='utf8'
     )
 
-    # create cursor
+    #Step 2. create cursor
     curs = conn.cursor()
 
-    # create sql and commit
-    for product in products_info:
-        sql = "INSERT INTO views_tb VALUES('"  + product[0] + "','" + product[1] + "','" + product[2] + "','" + product[3] + "','" + product[4] + "');"
+    #Step 3. create sql and commit
+    for deal in deals_info:
+        sql = "INSERT INTO views_tb VALUES('"  + deal[0] + "','" + deal[1] + "','" + deal[2] + "','" + deal[3] + "','" + deal[4] + "');"
         print(sql)
         print("====================")
         curs.execute(sql)
         conn.commit()
     
-    # close connection
+    #Step 4. close connection
     conn.close()
 
 
 
 if __name__ == "__main__":
-
-    while True:
-        now = str(datetime.datetime.now())[0:-7]
- 
-        if now[-12:-10] in ['00', '15', '30', '45']:
-            get_timeSaleInfo()
-
-        time.sleep(898)
-
-        # # test용
-        # if now[-5:-3] in ['22', '24']:
-        #     get_timeSaleInfo()
-
-        # time.sleep(60)
+    
+    get_timeSaleInfo()
