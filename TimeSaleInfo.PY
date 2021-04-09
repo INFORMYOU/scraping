@@ -29,7 +29,10 @@ def get_timeSaleInfo():
     for i in range(deal_num):
         title = timesale_info.find_all('p', class_="dsc")[i].get_text().strip()
         price = timesale_info.find_all('strong')[i].get_text().strip()[:-1].replace(",","")
-        views = timesale_info.find_all('em', class_="cnt")[i].get_text().strip().replace(",","")
+        try:
+            views = timesale_info.find_all('em', class_="cnt")[i].get_text().strip().replace(",","")
+        except IndexError:
+            views = 0
         try : 
             url = re.search(r"https://smartstore.naver.com/main/products/\d+",str(timesale_info.find_all('a')[i])).group()
         except : 
