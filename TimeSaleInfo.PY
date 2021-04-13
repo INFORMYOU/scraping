@@ -14,7 +14,13 @@ def get_timeSaleInfo():
 
     #Step 1. 네이버 hotDeal page html data 가져오기
     url = 'https://shopping.naver.com/hotdeal/p/index.nhn'
-    req = requests.get(url)
+
+    try :
+        req = requests.get(url)
+    except :
+        time.sleep(2)
+        req = requests.get(url)
+        
     html = req.text
 
     #Step 2. timesale section 정보만 가져오기
