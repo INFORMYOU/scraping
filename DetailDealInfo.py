@@ -64,17 +64,36 @@ def get_detailDealInfo(URL) :
     # 리뷰
     num_reviews = soup.find_all('strong', class_='_2pgHN-ntx6')[0].get_text().replace(",","")
     review_greade = soup.find_all('strong', class_='_2pgHN-ntx6')[1].get_text()[0:-2]
+
+    detail_info = [title, thumbnail, discount_rate, original_price, sale_price, delivery, delivery_condition, num_reviews, review_greade]
+
+    return insert_data(detail_info)
+
+
+def insert_data(detail_info):
+ 
+    #Step 1. connection information
+    conn = pymysql.connect(
+        host = 'localhost', 
+        user = 'root', 
+        password = 'root1234',
+        db = 'naver_hotdeal', 
+        charset ='utf8'
+    )
+
+    #Step 2. create cursor
+    curs = conn.cursor()
+
+    #Step 3. create sql and commit
+    sql = "INSERT INTO detailInfo_tb VALUES('"  + detail_info[0] + "','" + detail_info[1] + "','" + detail_info[2] + "','" + detail_info[3] + "','" + detail_info[4] + "','" + detail_info[5] + "','" + detail_info[6] + "','" +  detail_info[7] +  "','" + detail_info[8]+ "');"
+    print(sql)
+    print("====================")
+    curs.execute(sql)
+    conn.commit()
     
-    print(title)
-    print(thumbnail)
-    print(discount_rate)
-    print(original_price)
-    print(sale_price)
-    print(delivery)
-    print(delivery_condition)
-    print(num_reviews)
-    print(review_greade)
-    print("==========================")
+    #Step 4. close connection
+    conn.close()
+
 
 if __name__ == "__main__":
     
